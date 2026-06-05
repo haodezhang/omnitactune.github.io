@@ -1,0 +1,63 @@
+<svg viewBox="0 0 1100 460" xmlns="http://www.w3.org/2000/svg" font-family="'Source Sans 3', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="gVis" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ecedfb"/><stop offset="1" stop-color="#dde0fa"/>
+    </linearGradient>
+    <linearGradient id="gTac" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbe9f5"/><stop offset="1" stop-color="#f6cfe8"/>
+    </linearGradient>
+    <linearGradient id="gOurs" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a37c9"/><stop offset="1" stop-color="#d63aa6"/>
+    </linearGradient>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#3b3f4a"/>
+    </marker>
+  </defs>
+
+  <!-- Vision card -->
+  <g>
+    <rect x="40" y="50" width="290" height="150" rx="16" fill="url(#gVis)" stroke="#2a37c9" stroke-width="1.5"/>
+    <text x="185" y="86" text-anchor="middle" font-size="22" font-weight="700" fill="#2a2f9e">👁  Vision</text>
+    <text x="185" y="118" text-anchor="middle" font-size="15.5" fill="#33384a">Abundant, scalable data</text>
+    <text x="185" y="142" text-anchor="middle" font-size="15.5" fill="#33384a">Global task structure &amp;</text>
+    <text x="185" y="163" text-anchor="middle" font-size="15.5" fill="#33384a">action sequence priors</text>
+    <text x="185" y="187" text-anchor="middle" font-size="13.5" font-style="italic" fill="#7a7f8c">“watch &amp; understand the plan”</text>
+  </g>
+
+  <!-- Touch card -->
+  <g>
+    <rect x="40" y="250" width="290" height="150" rx="16" fill="url(#gTac)" stroke="#d63aa6" stroke-width="1.5"/>
+    <text x="185" y="286" text-anchor="middle" font-size="22" font-weight="700" fill="#a8217e">✋  Touch</text>
+    <text x="185" y="318" text-anchor="middle" font-size="15.5" fill="#33384a">Scarce, hard to collect</text>
+    <text x="185" y="342" text-anchor="middle" font-size="15.5" fill="#33384a">Local force, contact</text>
+    <text x="185" y="363" text-anchor="middle" font-size="15.5" fill="#33384a">geometry &amp; slip</text>
+    <text x="185" y="387" text-anchor="middle" font-size="13.5" font-style="italic" fill="#7a7f8c">“feel &amp; refine the last mile”</text>
+  </g>
+
+  <!-- arrows to center -->
+  <path d="M330,125 C400,140 410,200 470,215" fill="none" stroke="#2a37c9" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M330,325 C400,310 410,250 470,235" fill="none" stroke="#d63aa6" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- center : human learning -->
+  <g>
+    <rect x="480" y="150" width="270" height="160" rx="18" fill="#ffffff" stroke="#3b3f4a" stroke-width="2"/>
+    <text x="615" y="185" text-anchor="middle" font-size="17" font-weight="700" fill="#23262f">Human Learning</text>
+    <line x1="510" y1="200" x2="720" y2="200" stroke="#e2e4ea" stroke-width="1.5"/>
+    <text x="615" y="228" text-anchor="middle" font-size="14.5" fill="#33384a">1. Learn visual priors</text>
+    <text x="615" y="250" text-anchor="middle" font-size="14.5" fill="#33384a">from imitation</text>
+    <text x="615" y="280" text-anchor="middle" font-size="14.5" fill="#33384a">2. Practice with touch to</text>
+    <text x="615" y="302" text-anchor="middle" font-size="14.5" fill="#33384a">refine execution</text>
+  </g>
+
+  <path d="M750,230 C800,230 810,230 845,230" fill="none" stroke="#3b3f4a" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- right: OmniTacTune -->
+  <g>
+    <rect x="855" y="150" width="210" height="160" rx="18" fill="url(#gOurs)"/>
+    <text x="960" y="198" text-anchor="middle" font-size="20" font-weight="800" fill="#ffffff">OmniTacTune</text>
+    <text x="960" y="228" text-anchor="middle" font-size="13.5" fill="#f3f5ff">Efficient · Generalizable</text>
+    <text x="960" y="247" text-anchor="middle" font-size="13.5" fill="#f3f5ff">· Robust</text>
+    <text x="960" y="277" text-anchor="middle" font-size="12.5" fill="#ffe7d6">tactile residual on a</text>
+    <text x="960" y="294" text-anchor="middle" font-size="12.5" fill="#ffe7d6">frozen visual policy</text>
+  </g>
+</svg>
