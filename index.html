@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OmniTacTune: Policy-Agnostic Real-World RL for Tactile Residual Adaptation of Visual Policies</title>
+<meta name="description" content="OmniTacTune adapts tactile feedback to pretrained visual policies through real-world residual RL, improving contact-rich manipulation from 5-40% to 85-100% within 40-80 minutes."/>
+<meta property="og:title" content="OmniTacTune: Policy-Agnostic Real-World RL for Tactile Residual Adaptation of Visual Policies"/>
+<meta property="og:description" content="Adapting tactile feedback to visual base policies via two-stage real-world residual RL."/>
+<meta property="og:image" content="static/figs/teaser.png"/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#171a2b;
+  --ink-soft:#3d4259;
+  --muted:#787e95;
+  --line:#e6e6f2;
+  --bg:#f7f7fc;
+  --card:#ffffff;
+  --blue:#2a37c9;        /* royal/indigo blue (logo) */
+  --indigo:#3a1d9e;      /* deep violet */
+  --orange:#d63aa6;      /* magenta/pink accent (logo tail) */
+  --blue-soft:#ecedfb;
+  --orange-soft:#fbe9f5;
+  --accent-grad:linear-gradient(95deg,#3a1d9e 0%,#2a37c9 45%,#d63aa6 100%);
+  --shadow:0 1px 2px rgba(30,24,70,.05),0 8px 30px rgba(40,30,90,.07);
+  --shadow-hover:0 6px 14px rgba(40,30,90,.10),0 18px 50px rgba(40,30,90,.13);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:78px}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Source Sans 3',system-ui,sans-serif;
+  font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 10% -8%,rgba(58,29,158,.08),transparent 60%),
+    radial-gradient(820px 540px at 94% 2%,rgba(214,58,166,.07),transparent 60%),
+    radial-gradient(700px 500px at 60% 100%,rgba(42,55,201,.05),transparent 60%);
+}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.narrow{max-width:820px;margin-left:auto;margin-right:auto}
+
+/* nav */
+nav{
+  position:sticky;top:0;z-index:50;backdrop-filter:saturate(150%) blur(10px);
+  background:rgba(247,247,252,.82);border-bottom:1px solid var(--line);
+}
+nav .wrap{display:flex;align-items:center;gap:20px;height:60px}
+.brand{font-family:'Newsreader',serif;font-weight:600;font-size:21px;color:var(--ink);letter-spacing:.2px;white-space:nowrap}
+.brand b{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.navlinks{margin-left:auto;display:flex;gap:22px;flex-wrap:wrap}
+.navlinks a{color:var(--ink-soft);font-size:15px;font-weight:600}
+.navlinks a:hover{color:var(--blue);text-decoration:none}
+@media(max-width:760px){.navlinks{display:none}}
+
+/* hero */
+header.hero{padding:62px 0 30px;text-align:center}
+.kicker{display:inline-block;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:18px}
+h1.title{
+  font-family:'Newsreader',serif;font-weight:600;font-size:clamp(26px,3.6vw,42px);
+  line-height:1.18;letter-spacing:-.01em;margin:0 auto 8px;max-width:1080px;color:var(--ink);
+}
+h1.title .mark{background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.subtitle{font-size:19px;color:var(--ink-soft);max-width:720px;margin:14px auto 0;font-style:italic;font-family:'Newsreader',serif}
+.badges{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin:26px 0 6px}
+.badge{font-size:13.5px;font-weight:600;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);padding:6px 14px;border-radius:999px;box-shadow:var(--shadow)}
+.authors{margin:26px auto 4px;max-width:780px;font-size:18.5px;color:var(--ink)}
+.authors a{color:var(--ink);border-bottom:1.5px solid transparent}
+.authors a:hover{border-bottom-color:var(--blue);text-decoration:none;color:var(--blue)}
+.affil{color:var(--muted);font-size:15.5px;margin-top:6px}
+.links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:28px 0 8px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;
+  padding:10px 20px;border-radius:999px;border:1px solid var(--line);
+  background:var(--card);color:var(--muted);box-shadow:var(--shadow);cursor:not-allowed;
+}
+a.btn{color:var(--ink);cursor:pointer;transition:.2s}
+a.btn .dot{background:var(--blue)}
+a.btn:hover{text-decoration:none;transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:#c7d2f5}
+.btn .dot{width:8px;height:8px;border-radius:50%;background:#c7cad4}
+.btn.disabled{opacity:.78}
+.note-soon{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* sections */
+section{padding:46px 0}
+.sec-head{text-align:center;margin-bottom:30px}
+.sec-head .eyebrow{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--orange)}
+h2{font-family:'Newsreader',serif;font-weight:600;font-size:clamp(26px,3.3vw,36px);margin:6px 0 0;letter-spacing:-.01em}
+h3{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px}
+.lead{color:var(--ink-soft);font-size:18px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);border:0;margin:0}
+
+/* video pieces */
+.video-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:.25s}
+.video-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.video-card .vid-wrap{position:relative;background:#0d0f14;line-height:0}
+.video-card video{width:100%;display:block}
+.tag{position:absolute;top:12px;left:12px;background:rgba(20,22,30,.84);color:#fff;font-weight:800;font-size:18px;letter-spacing:.045em;padding:7px 13px;border-radius:9px;font-family:'JetBrains Mono',monospace;line-height:1;box-shadow:0 3px 12px rgba(0,0,0,.24)}
+.vlabel{padding:13px 16px 15px}
+.vlabel .t{font-weight:700;font-size:16.5px;color:var(--ink)}
+.vlabel .d{font-size:13.5px;color:var(--muted);margin-top:2px}
+.full-card .vid-wrap{aspect-ratio:16/9}
+.full-card video{height:100%;object-fit:contain;background:#0d0f14}
+
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.flow-grid{margin:20px 0 4px}
+.flow-grid .vid-wrap{aspect-ratio:16/9}
+.flow-grid video{height:100%;object-fit:cover}
+.flow-grid .vlabel{text-align:center;padding:12px 12px 14px}
+.shared-demo-frame{grid-column:1/-1;background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,247,241,.74));border:1px solid rgba(229,92,31,.20);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.shared-demo-label{display:flex;align-items:baseline;justify-content:center;gap:12px;margin:0 0 14px;text-align:center}
+.shared-demo-label span{font-size:14px;font-weight:800;color:var(--orange);letter-spacing:.08em;text-transform:uppercase}
+.shared-demo-label b{font-family:'Newsreader',serif;font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.shared-demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.compact-video{border-radius:14px;box-shadow:none}
+@media(max-width:880px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(2,1fr)}.shared-demo-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.grid2{grid-template-columns:1fr}.grid3,.grid4,.shared-demo-grid{grid-template-columns:1fr}.shared-demo-label{display:block}.shared-demo-label b{display:block;margin-top:3px}}
+
+/* figure */
+figure{margin:0}
+.fig{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.fig img{width:100%;display:block;border-radius:8px}
+figcaption{font-size:14.5px;color:var(--muted);margin-top:14px;line-height:1.5;text-align:center}
+figcaption b{color:var(--ink-soft)}
+
+/* abstract */
+.abstract{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 34px;box-shadow:var(--shadow);position:relative}
+.abstract::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:4px;background:var(--accent-grad)}
+.abstract p{margin:0;font-size:18px;line-height:1.75;color:var(--ink-soft)}
+.abstract .hl{color:var(--ink);font-weight:600}
+
+/* insights */
+.insight-list{display:grid;gap:16px;margin-top:6px}
+.insight{display:grid;grid-template-columns:46px 1fr;gap:18px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);transition:.22s}
+.insight:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.insight .n{font-family:'Newsreader',serif;font-size:30px;font-weight:600;line-height:1;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.insight p{margin:0;color:var(--ink-soft);font-size:17px}
+.insight p b{color:var(--ink)}
+
+/* result row: text + figure */
+.split{display:grid;grid-template-columns:0.92fr 1.08fr;gap:30px;align-items:center}
+.split.rev{grid-template-columns:1.08fr 0.92fr}
+@media(max-width:820px){.split,.split.rev{grid-template-columns:1fr}}
+.split h3{font-size:21px;margin-bottom:8px}
+.split p{color:var(--ink-soft);font-size:17px;margin:0 0 10px}
+.pill{display:inline-block;font-size:13.5px;font-weight:700;color:var(--blue);background:var(--blue-soft);padding:3px 11px;border-radius:999px;margin:2px 6px 2px 0}
+.pill.o{color:var(--orange);background:var(--orange-soft)}
+
+/* table */
+.tablecard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.tablecard img{width:100%;display:block}
+.tbl-note{font-size:14.5px;color:var(--muted);padding:14px 20px;border-top:1px solid var(--line);background:#fafaff;line-height:1.55}
+.tbl-note b{color:var(--ink-soft)}
+
+/* stacked result block */
+.stack{display:grid;gap:18px}
+
+/* ablations */
+.abl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+@media(max-width:760px){.abl-grid{grid-template-columns:1fr}}
+.abl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.abl h3{font-size:18px;margin-bottom:4px}
+.abl p{font-size:15px;color:var(--muted);margin:0 0 12px}
+.abl .ph{aspect-ratio:16/10;border:1.5px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;background:repeating-linear-gradient(45deg,#fcfcfb,#fcfcfb 10px,#f7f7f4 10px,#f7f7f4 20px)}
+.abl img{width:100%;border-radius:10px;display:block}
+
+footer{padding:48px 0 60px;border-top:1px solid var(--line);margin-top:30px;text-align:center;color:var(--muted);font-size:14.5px}
+.bib{background:#0f1117;color:#e6e8ef;border-radius:14px;padding:20px 22px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;overflow:auto;margin-top:8px}
+.bib .k{color:#8fb4ff}.bib .s{color:#f0a87a}
+
+.eq{font-style:italic;font-family:'Newsreader',serif}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <span class="brand">Omni<b>TacTune</b></span>
+    <div class="navlinks">
+      <a href="#demos">Demos</a>
+      <a href="#insights">Insights</a>
+      <a href="#overview">Overview</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#results">Results</a>
+      <a href="#ablations">Ablations</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="title"><span class="mark">OmniTacTune</span>: Policy-Agnostic Real-World RL<br/>for Tactile Residual Adaptation of Visual Policies</h1>
+
+    <div class="badges" style="margin-top:8px">
+      <span class="badge">Policy-Agnostic</span>
+      <span class="badge">Real-World RL</span>
+      <span class="badge">Tactile Residual</span>
+      <span class="badge">Contact-Rich</span>
+      <span class="badge">40–80 min adaptation</span>
+    </div>
+
+    <div class="authors">
+      <a href="https://colinyu1.github.io/">Kelin Yu</a><sup>1*</sup>,
+      <a href="https://haodezhang.github.io/">Haode Zhang</a><sup>2*</sup>,
+      <a href="https://harishravichandar.com/">Harish Ravichandar</a><sup>3</sup>,
+      <a href="https://y8han.github.io/">Yunhai Han</a><sup>3</sup>,
+      <a href="https://ruohangao.github.io/">Ruohan Gao</a><sup>1</sup>
+      <div class="affil"><sup>1</sup>University of Maryland, College Park &nbsp;&middot;&nbsp; <sup>2</sup>Shanghai Jiao Tong University &nbsp;&middot;&nbsp; <sup>3</sup>Georgia Institute of Technology</div>
+      <div class="equal"><sup>*</sup>Equal contribution</div>
+    </div>
+
+    <div class="links">
+      <a class="btn" href="static/paper.pdf" target="_blank" rel="noopener"><span class="dot"></span>Paper</a>
+      <span class="btn disabled"><span class="dot"></span>arXiv</span>
+      <span class="btn disabled"><span class="dot"></span>Video</span>
+    </div>
+  </div>
+</header>
+
+<hr class="divider"/>
+
+<!-- ===================== DEMOS ===================== -->
+<section id="demos">
+  <div class="wrap">
+
+    <!-- Full video -->
+    <figure class="video-card full-card" style="margin-bottom:34px">
+      <div class="vid-wrap">
+        <video src="static/videos/full_video.mp4" poster="static/posters/full_video.jpg" controls playsinline preload="metadata"></video>
+      </div>
+      <div class="vlabel">
+        <div class="t">Full Video — Method &amp; Results Overview</div>
+        <div class="d">A complete walkthrough of the OmniTacTune pipeline and all four contact-rich tasks.</div>
+      </div>
+    </figure>
+
+    <!-- four tasks -->
+    <h3 style="text-align:center;font-family:'Newsreader',serif;font-weight:600;font-size:24px;margin:6px 0 18px">Four Contact-Rich Tasks</h3>
+    <div class="grid2">
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">10×</span>
+          <video src="static/videos/task_peg.mp4" poster="static/posters/task_peg.jpg" autoplay loop muted playsinline preload="metadata"></video>
+        </div>
+        <div class="vlabel"><div class="t">Peg-in-Hole</div><div class="d">Spatial Generalization + Insertion</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">10×</span>
+          <video src="static/videos/task_charger.mp4" poster="static/posters/task_charger.jpg" autoplay loop muted playsinline preload="metadata"></video>
+        </div>
+        <div class="vlabel"><div class="t">Charger Insertion</div><div class="d">Precise Insertion</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">10×</span>
+          <video src="static/videos/task_cap.mp4" poster="static/posters/task_cap.jpg" autoplay loop muted playsinline preload="metadata"></video>
+        </div>
+        <div class="vlabel"><div class="t">Cap Opening</div><div class="d">Tool Using + Precise Interaction</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">10×</span>
+          <video src="static/videos/task_box.mp4" poster="static/posters/task_box.jpg" autoplay loop muted playsinline preload="metadata"></video>
+        </div>
+        <div class="vlabel"><div class="t">Box Opening</div><div class="d">Tool Using + Dynamic Pivoting</div></div>
+      </figure>
+    </div>
+
+    <!-- training demo -->
+    <h3 style="text-align:center;font-family:'Newsreader',serif;font-weight:600;font-size:24px;margin:38px 0 6px">Training Demonstration</h3>
+    <p style="text-align:center;color:var(--ink-soft);max-width:680px;margin:0 auto 18px">A <b>one-take demo</b> of online real-world RL — the policy is <b>trained in ~40 minutes</b> directly on hardware, with no resets staged for the camera.</p>
+    <figure class="video-card" style="max-width:760px;margin:0 auto">
+      <div class="vid-wrap">
+        <video src="static/videos/training.mp4" poster="static/posters/training.jpg" autoplay loop muted playsinline preload="metadata"></video>
+      </div>
+      <div class="vlabel"><div class="t">One-Take Online RL — Trained in 40 min</div><div class="d">Continuous real-world practice from a weak base policy to reliable contact-rich behavior.</div></div>
+    </figure>
+
+    <!-- base policies -->
+    <h3 style="text-align:center;font-family:'Newsreader',serif;font-weight:600;font-size:24px;margin:42px 0 6px">Generalize Across Different Base Policies</h3>
+    <p style="text-align:center;color:var(--ink-soft);max-width:700px;margin:0 auto 18px">The same residual adaptation pipeline plugs into architecturally diverse visual base policies.</p>
+    <div class="grid2">
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/base_flow.mp4" poster="static/posters/base_flow.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">Flow Policy</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/base_act.mp4" poster="static/posters/base_act.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">ACT</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/base_dp.mp4" poster="static/posters/base_dp.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">Diffusion Policy (DP)</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/base_pi05.mp4" poster="static/posters/base_pi05.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">&#960;<sub>0.5</sub></div></div>
+      </figure>
+    </div>
+
+    <!-- data sources -->
+    <h3 style="text-align:center;font-family:'Newsreader',serif;font-weight:600;font-size:24px;margin:42px 0 6px">Generalize Across Different Data Sources</h3>
+    <p style="text-align:center;color:var(--ink-soft);max-width:700px;margin:0 auto 18px">Visual base policies can be learned from scalable human videos or from robot teleoperation.</p>
+    <div class="grid2">
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">3×</span><video src="static/videos/datasrc_human.mp4" poster="static/posters/datasrc_human.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">Human Video</div><div class="d">Cross-embodiment motion priors from human demonstrations</div></div>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><span class="tag">10×</span><video src="static/videos/datasrc_teleop.mp4" poster="static/posters/datasrc_teleop.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <div class="vlabel"><div class="t">Teleoperation Data</div><div class="d">VR-teleoperated robot demonstrations</div></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== INSIGHTS ===================== -->
+<section id="insights">
+  <div class="wrap narrow">
+    <div class="sec-head">
+      <span class="eyebrow">Motivation</span>
+      <h2>✦ Insights</h2>
+    </div>
+    <div class="insight-list">
+      <div class="insight">
+        <div class="n">1</div>
+        <p>Visual data is <b>abundant</b>, and the visual policies trained on it are <b>strong</b> — but vision alone struggles with <b>contact-rich manipulation</b>, where success hinges on local force and contact geometry that cameras cannot measure.</p>
+      </div>
+      <div class="insight">
+        <div class="n">2</div>
+        <p>Tactile data is <b>highly informative</b> for contact, yet it is <b>far harder to collect</b> than visual data and tends to <b>waste the abundant visual data</b> already available if you try to scale it from scratch.</p>
+      </div>
+      <div class="insight">
+        <div class="n">3</div>
+        <p>We want an <b>efficient, generalizable, and robust</b> pipeline that <b>adds tactile feedback on top of an existing visual policy</b> — rather than retraining a visuo-tactile policy from scratch.</p>
+      </div>
+      <div class="insight">
+        <div class="n">4</div>
+        <p>Inspired by <b>how humans learn</b>: after acquiring a visual prior through imitation, we use <b>online practice</b> — interacting with the world through touch — to learn the contact strategy that completes the task.</p>
+      </div>
+    </div>
+
+    <figure class="fig" style="margin-top:26px">
+      <img src="static/figs/insight.svg" alt="Vision provides scalable global priors; touch provides local residual feedback; OmniTacTune combines them like human learning."/>
+      <figcaption><b>Vision and touch play complementary roles.</b> Vision provides broad, scalable supervision for task-level behavior; touch provides local, residual feedback for the last mile of physical interaction.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== OVERVIEW ===================== -->
+<section id="overview">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Overview</span>
+      <h2>What is OmniTacTune?</h2>
+    </div>
+    <p class="lead narrow" style="text-align:center;margin-bottom:26px">
+      OmniTacTune is a <b>policy-agnostic real-world RL pipeline</b> that adapts tactile feedback to pretrained visual policies through <b>residual correction</b>. It keeps the visual policy frozen as a motion prior and learns a lightweight tactile residual that fixes the contact-rich "last mile" — generalizing across diverse tasks, base policies, and tactile representations.
+    </p>
+    <figure class="fig">
+      <img src="static/figs/teaser.png" alt="OmniTacTune teaser: visual base policies, two-stage tactile residual RL, and four real-world tasks."/>
+      <figcaption><b>OmniTacTune</b> adapts tactile feedback to diverse visual base policies trained from human videos or robot data <b>(left)</b> through a two-stage real-world tactile residual RL pipeline <b>(middle)</b>, enabling efficient tactile adaptation across challenging contact-rich manipulation tasks <b>(right)</b>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== ABSTRACT ===================== -->
+<section id="abstract">
+  <div class="wrap narrow">
+    <div class="sec-head"><span class="eyebrow">Abstract</span><h2>Abstract</h2></div>
+    <div class="abstract">
+      <p>
+        Visual policies learned from human videos, teleoperation, and robot demonstrations offer scalable motion priors, but often fail in contact-rich manipulation, where success significantly depends on local force and contact geometry. Tactile sensing provides these complementary signals, yet tactile data remain costly to collect and hard to generalize across sensors, robots, and tasks. We introduce <span class="hl">OmniTacTune</span>, a policy-agnostic real-world RL pipeline that adapts tactile feedback to pretrained visual policies through residual correction. OmniTacTune uses a <span class="hl">two-stage design</span>: it first warm-starts tactile-aware learning from autonomous base-policy rollouts, then learns a lightweight tactile residual policy through online interaction. Extensive experiments show that OmniTacTune generalizes across diverse contact-rich tasks, visual base policies, and tactile representations. Across four real-world contact-rich tasks, it improves visual base policies from <span class="hl">5–40% success to 85–100% within 40–80 minutes</span>, demonstrating an efficient path for adapting tactile feedback to scalable visual robot policies.
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== PIPELINE ===================== -->
+<section id="pipeline">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Method</span><h2>Two-Stage Real-World Tactile Residual RL</h2></div>
+    <p class="lead narrow" style="text-align:center;margin-bottom:26px">
+      <b>Stage 1 — Warm-start:</b> autonomous rollouts of the frozen base policy initialize the replay buffer, bootstrap a flow-tactile critic, and adapt the tactile encoder (with ControlTac augmentation).
+      <b>Stage 2 — Online RL:</b> a lightweight residual policy learns contact-aware corrections on top of the frozen visual policy, guided by an object-centric multi-sensory reward.
+    </p>
+    <figure class="fig">
+      <img src="static/figs/pipeline.png" alt="System overview: data collection and base policies; two-stage warm-start and policy learning; dense reward shaping."/>
+      <figcaption><b>System overview.</b> OmniTacTune collects visual demonstrations via human-video retargeting and VR teleoperation to train diverse base policies <b>(left)</b>, then adapts tactile feedback through a warm-start stage and an online residual-learning stage <b>(top right)</b>, using a dense multi-sensory reward to guide efficient real-world learning <b>(bottom)</b>.</figcaption>
+    </figure>
+
+    <div class="sec-head" style="margin-top:38px;margin-bottom:10px">
+      <span class="eyebrow">Flow Generation</span>
+      <h2>Generated Flow for Policy Guidance and Reward Shaping</h2>
+    </div>
+    <p class="lead narrow" style="text-align:center;margin:0 auto 20px">
+      OmniTacTune generates object-centric flow from the initial observation to provide two complementary signals: motion guidance for both the base policy and the residual policy, and a dense flow-derived reward during residual RL. This generated task-level guidance encourages smoother object-centric trajectories while making real-world training more efficient and reliable.
+    </p>
+    <div class="grid3 flow-grid">
+      <div class="shared-demo-frame">
+        <div class="shared-demo-label">
+          <span>Peg-in-Hole</span>
+          <b>Spatial Generalization</b>
+        </div>
+        <div class="shared-demo-grid">
+          <figure class="video-card compact-video">
+            <div class="vid-wrap"><video src="static/videos/flow_generation/peg_spatial_1.mp4" poster="static/posters/flow_generation/peg_spatial_1.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+          </figure>
+          <figure class="video-card compact-video">
+            <div class="vid-wrap"><video src="static/videos/flow_generation/peg_spatial_2.mp4" poster="static/posters/flow_generation/peg_spatial_2.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+          </figure>
+          <figure class="video-card compact-video">
+            <div class="vid-wrap"><video src="static/videos/flow_generation/peg_spatial_3.mp4" poster="static/posters/flow_generation/peg_spatial_3.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+          </figure>
+        </div>
+      </div>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/flow_generation/charger_insertion.mp4" poster="static/posters/flow_generation/charger_insertion.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <figcaption class="vlabel"><div class="t">Charger Insertion</div><div class="d">Guidance + reward shaping</div></figcaption>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/flow_generation/cap_opening.mp4" poster="static/posters/flow_generation/cap_opening.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <figcaption class="vlabel"><div class="t">Cap Opening</div><div class="d">Guidance + reward shaping</div></figcaption>
+      </figure>
+      <figure class="video-card">
+        <div class="vid-wrap"><video src="static/videos/flow_generation/box_opening.mp4" poster="static/posters/flow_generation/box_opening.jpg" autoplay loop muted playsinline preload="metadata"></video></div>
+        <figcaption class="vlabel"><div class="t">Box Opening</div><div class="d">Guidance + reward shaping</div></figcaption>
+      </figure>
+    </div>
+
+    <p class="lead narrow" style="text-align:center;margin:34px auto 22px">
+      Because the warm-start buffer holds only a few real contact trajectories, we use <b>ControlTac</b> to expand tactile diversity without any extra robot interaction. We first remove the marker pattern from a real tactile image to obtain a marker-free reference, generate new tactile images under different contact forces (<span class="eq">&Delta;F</span>), and then composite the original markers back. Robot states, actions, flow features, and rewards stay unchanged — only the tactile images vary — exposing the encoder and critic to richer contact-force and contact-pose conditions.
+    </p>
+    <figure class="fig">
+      <img src="static/figs/controltac.png" alt="ControlTac augmentation: remove markers, generate marker-free tactile images under different contact forces, then composite markers back."/>
+      <figcaption><b>ControlTac trajectory-level augmentation.</b> A real tactile image is converted to a marker-free reference, perturbed to new contact forces (e.g. <span class="eq">&Delta;F = &minus;3N</span> and <span class="eq">&Delta;F = +3N</span>) via ControlTac, and recomposed with the original marker mask — producing physically plausible tactile variants for warm-start.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== RESULTS ===================== -->
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Experiments</span><h2>Results</h2></div>
+
+    <!-- Result 1: main efficiency, fig + table stacked -->
+    <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:23px;margin:0 0 4px">1. Efficient Tactile Adaptation with Real-World RL</h3>
+    <p class="lead" style="margin:0 0 18px">Across all four tasks, OmniTacTune adapts tactile feedback <b>faster and more reliably</b> than prior real-world RL methods, lifting weak base policies to <b>85–100%</b> success within 40–80 minutes of online practice.</p>
+    <div class="stack" style="margin-bottom:14px">
+      <figure class="fig">
+        <img src="static/figs/result_curves.png" alt="Training curves: OmniTacTune rises faster and higher than PLD*, PLD (Visual Only), and ViTAL across all four tasks."/>
+        <figcaption><b>Training efficiency.</b> OmniTacTune improves from 5–40% to 80–100% within 40–80 minutes and consistently exceeds all baselines.</figcaption>
+      </figure>
+      <div class="tablecard">
+        <img src="static/tables/table1.png" alt="Table 1: Final success rates across four tasks. Ours achieves 100/100/90/85, average 93.75%."/>
+        <div class="tbl-note"><b>Table 1.</b> Final success rates across the four real-world contact-rich tasks after RL training. OmniTacTune reaches a <b>93.75%</b> average, far above PLD* (52.5%), PLD Visual-Only (37.5%), and ViTAL (43.75%).</div>
+      </div>
+    </div>
+
+    <hr class="divider" style="margin:34px 0"/>
+
+    <!-- Result 2: base policies, text left + fig right -->
+    <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:23px;margin:0 0 16px">2. Generalizing Across Visual Base Policies</h3>
+    <div class="split">
+      <div>
+        <p>The residual pipeline is <b>not tied to a specific policy architecture</b>. On Peg-in-Hole, OmniTacTune improves five different base policies — trained from human videos or teleoperation — within <b>~50 minutes</b> of real-world practice.</p>
+        <p>It lifts every base policy by <b>+40% to +60%</b> success, reaching <b>75–100%</b>. The human flow policy yields the smoothest motion prior and the highest final performance.</p>
+        <div style="margin-top:12px">
+          <span class="pill">Flow +40–60%</span>
+          <span class="pill o">ACT +55%</span>
+          <span class="pill">DP +60%</span>
+          <span class="pill o">&#960;<sub>0.5</sub> +60%</span>
+        </div>
+      </div>
+      <figure class="fig">
+        <img src="static/figs/result_policies.png" alt="Bar chart: each base policy improved by 40-60% after OmniTacTune, reaching 75-100%."/>
+        <figcaption><b>OmniTacTune consistently improves diverse base visual policies</b> on Peg-in-Hole.</figcaption>
+      </figure>
+    </div>
+
+    <hr class="divider" style="margin:34px 0"/>
+
+    <!-- Result 3: vs visuo-tactile IL, table -->
+    <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:23px;margin:0 0 6px">3. More Effective Than Visuo-Tactile Imitation Learning</h3>
+    <p class="lead" style="margin:0 0 18px">Online tactile residual refinement beats learning a visuo-tactile policy from <b>more</b> demonstrations — even when every imitation baseline is given an extra 50 minutes of teleoperation data.</p>
+    <div class="tablecard">
+      <img src="static/tables/table2.png" alt="Table 2: OmniTacTune outperforms ACT, ACT+Tactile, DP, RDP, Pi0.5, Pi0.5+Tactile, reaching 100% vs at most 65%."/>
+      <div class="tbl-note"><b>Table 2.</b> Success rates of visuo-tactile robot-learning methods on Peg-in-Hole. To ensure a fair comparison, <b>all baselines were given an additional 50 minutes of teleoperation data</b> (demonstrations increased from 50 to 90) — matching the budget of our online stage. Even so, imitation- and SFT-based visuo-tactile learning remains <b>20–30% behind</b> OmniTacTune, showing that contact correction is better learned through trial-and-error than from extra tactile demonstrations.</div>
+    </div>
+
+    <hr class="divider" style="margin:34px 0"/>
+
+    <!-- Result 4: tactile reps, text left + fig right -->
+    <h3 style="font-family:'Newsreader',serif;font-weight:600;font-size:23px;margin:0 0 16px">4. Generalizing Across Tactile Representations</h3>
+    <div class="split">
+      <div>
+        <p>OmniTacTune is <b>not tied to a particular tactile representation</b>. On <b>Peg-in-Hole</b> and <b>Charger Insertion</b>, it adapts equally well with pretrained tactile image encoders (AnyTouch2, Sparsh, T3) and with compact low-dimensional tactile markers.</p>
+        <p>AnyTouch2 and markers reach comparable final performance, while T3 and Sparsh lag slightly on the more dynamic Charger Insertion — likely because they are not pretrained on dynamic-contact tactile data.</p>
+        <div style="margin-top:12px">
+          <span class="pill">AnyTouch2</span>
+          <span class="pill o">Markers</span>
+          <span class="pill">Sparsh</span>
+          <span class="pill o">T3</span>
+        </div>
+      </div>
+      <figure class="fig">
+        <img src="static/figs/result_tactile.png" alt="Radar chart: large improvement across AnyTouch2, Sparsh, T3, and Markers on both tasks after OmniTacTune."/>
+        <figcaption><b>Adapting different tactile representations</b> via OmniTacTune on two contact-rich tasks.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== ABLATIONS ===================== -->
+<section id="ablations">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Analysis</span><h2>Ablation Studies</h2></div>
+    <p class="lead narrow" style="text-align:center;margin-bottom:26px">We ablate the four core design choices of OmniTacTune on Peg-in-Hole. Each component contributes to faster, more stable adaptation.</p>
+    <div class="abl-grid">
+      <div class="abl">
+        <h3>Reward Shaping</h3>
+        <p>Removing any component of the multi-sensory reward slows learning and lowers final success — reaching, dense flow, and tactile rewards are all needed.</p>
+        <img src="static/figs/ablation_reward.png" alt="Reward shaping ablation: removing any reward component lowers final success."/>
+      </div>
+      <div class="abl">
+        <h3>Residual Policy Design</h3>
+        <p>Trajectory-level keypoint guidance with contact-aware gating outperforms per-step keypoints and raw visuo-tactile conditioning.</p>
+        <img src="static/figs/ablation_policy.png" alt="Residual policy design ablation comparing keypoint conditioning, gating, and visuo-tactile inputs."/>
+      </div>
+      <div class="abl">
+        <h3>Warm-Start Strategy</h3>
+        <p>Optimizing the tactile encoder + critic (with ControlTac augmentation) during warm-start is critical for stable residual RL.</p>
+        <img src="static/figs/ablation_warmstart.png" alt="Warm-start ablation: removing optimization, ControlTac, critic loss, or reconstruction loss degrades performance."/>
+      </div>
+      <div class="abl">
+        <h3>Action Space Design</h3>
+        <p>Both the residual scheduler and action scaling matter; an appropriate scale (0–0.15) keeps exploration stable and sample-efficient.</p>
+        <img src="static/figs/ablation_actions.png" alt="Action space ablation: scheduler and action scaling are both important."/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<!-- ===================== BIBTEX ===================== -->
+<section id="bibtex">
+  <div class="wrap narrow">
+    <div class="sec-head"><span class="eyebrow">Citation</span><h2>BibTeX</h2></div>
+    <div class="bib">
+<span class="k">@article</span>{omnitactune2026,<br/>
+&nbsp;&nbsp;title&nbsp;&nbsp;&nbsp;&nbsp;= {<span class="s">OmniTacTune: Policy-Agnostic Real-World RL for Tactile Residual Adaptation of Visual Policies</span>},<br/>
+&nbsp;&nbsp;author&nbsp;&nbsp;= {Yu, Kelin and Zhang, Haode and Ravichandar, Harish and Han, Yunhai and Gao, Ruohan},<br/>
+&nbsp;&nbsp;year&nbsp;&nbsp;&nbsp;&nbsp;= {2026}<br/>
+}
+    </div>
+  </div>
+</section>
+
+<hr class="divider"/>
+
+<footer>
+  <div class="wrap">
+    <p>OmniTacTune. Project page template adapted from
+    <a href="https://nerfies.github.io/">Nerfies</a> and the
+    <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>.</p>
+  </div>
+</footer>
+
+<script>
+// Pause offscreen autoplay videos to save resources; play when visible
+const vids=document.querySelectorAll('video[autoplay]');
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    const v=e.target;
+    if(e.isIntersecting){ v.play().catch(()=>{}); }
+    else { v.pause(); }
+  });
+},{threshold:0.2});
+vids.forEach(v=>io.observe(v));
+</script>
+</body>
+</html>
